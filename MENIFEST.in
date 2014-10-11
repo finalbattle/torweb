@@ -1,0 +1,5 @@
+global-include COPYING.txt requirements.txt
+include COPYING.txt
+include torweb/utils/
+include torweb/lib/
+recursive-include torweb *.py

@@ -1,0 +1,5 @@
+*.pyc
+.hg/
+.hgignore
+dist/
+torweb.egg-info/
