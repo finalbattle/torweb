@@ -1,0 +1,11 @@
+Jinja2==2.7.1
+MarkupSafe==0.18
+MySQL-python==1.2.4
+PyYAML==3.10
+SQLAlchemy==0.8.3
+argparse==1.2.1
+pymemcache==1.1.2
+storm==0.20
+tornado==3.1.1
+wsgiref==0.1.2
+werkzeug==0.9.4
