@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import torweb
 from setuptools import setup, find_packages
 
 with open('README.txt') as file:
@@ -13,7 +14,7 @@ print long_description
 ###
 setup(
     name = "torweb",
-    version = "0.0.27",
+    version = torweb.__version__,
     packages = find_packages(),
     #packages = ["torweb"],
     include_package_data = True,

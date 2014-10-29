@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # created: zhangpeng <zhangpeng@ivtime.com>
 
+__version__ = "0.0.28"
+
 import os
 import re
 import logging
@@ -20,6 +22,7 @@ base_path = abspath(dirname(__file__))
 import sys
 sys.path.insert(0, abspath(join(base_path, 'utils')))
 sys.path.insert(0, abspath(join(base_path, 'lib')))
+
 
 def get_modules(prefix, parent):
     if not os.path.isfile(os.path.join(parent, '__init__.py')):
