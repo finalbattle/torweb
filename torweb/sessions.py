@@ -237,6 +237,100 @@ class MemcachedSessionStore(SessionStore):
 
 import cPickle as pickle
 from uuid import uuid4
+from code import interact
+import redis
+class RedisPool(object):
+    
+    _pool = None
+
+    def __init__(self, host, port, timeout=0):
+        self.host = host
+        self.port = port
+        self.timeout = timeout
+    def get_pool(self):
+        if not RedisPool._pool:
+            RedisPool.pool = redis.ConnectionPool(host=self.host,
+                port=self.port, db=0,socket_timeout=self.timeout)
+        return RedisPool.pool
+
+    def get_redis(self):
+        return redis.Redis(connection_pool=self.get_pool())
+
+    
+    def _ensure__pool(self):
+        if not RedisPool._pool:
+            RedisPool.get_pool()
+    
+    def get_conn(self):
+        self._ensure__pool()
+        return redis.Redis(connection_pool=self._pool)
+    
+    def get_pconn(self):
+        self._ensure__pool()
+        return redis.Redis(connection_pool=self._pool).pipeline()
+        # 可以在一次请求中执行多个set命令，这样避免了多次的往返时延
+
+    def clear_rd(self):
+        """清空redis数据"""
+        rd = self.get_conn()
+        r1 = str(rd.dbsize())
+        rd.flushdb()
+        r2 = str(rd.dbsize())
+        #Config.logger.info("已清空redis数据，清空前：%s，清空后：%s" % (r1, r2,))
+        print ("已清空redis数据，清空前：%s，清空后：%s" % (r1, r2,))
+        
+    def clear_rd_keys(self, *patterns):
+        """清空redis数据"""
+        rd = self.get_conn()
+        r1 = str(rd.dbsize())
+        for pt in patterns:
+            keys = rd.keys(pt)
+            for key in keys:
+                rd.delete(key)
+        r2 = str(rd.dbsize())
+        #Config.logger.info("已清空redis %s相关数据，清空前：%s，清空后：%s" % (patterns, r1, r2,))
+        print ("已清空redis %s相关数据，清空前：%s，清空后：%s" % (patterns, r1, r2,))
+
+#def get_redis():
+#    return RedisPool.get_redis()
+
+class RedisSessionStoreNew:
+ 
+    def __init__(self, redis_pool, **options):
+        self.options = {
+            'key_prefix': 'session',
+            'expire': 7200,
+        }
+        self.options.update(options)
+        self.redis = redis_pool
+ 
+    def prefixed(self, sid):
+        print '%s:%s' % (self.options['key_prefix'], sid)
+        return '%s:%s' % (self.options['key_prefix'], sid)
+ 
+    def generate_sid(self, salt=None):
+        return generate_key(salt)
+#        return uuid4().get_hex()
+ 
+    def get_session(self, sid, name):
+        data = self.redis.hget(self.prefixed(sid), name)
+        session = pickle.loads(data) if data else dict()
+        print "RedisSessionStore--get_session--session", session
+        return session
+ 
+    def set_session(self, sid, session_data, name):
+        expiry = self.options['expire']
+        self.redis.hset(self.prefixed(sid), name, pickle.dumps(session_data))
+        if expiry:
+            self.redis.expire(self.prefixed(sid), expiry)
+        print "save session: set_session--%s-%s-%s" % (sid, session_data, name)
+    def save(self, session):
+        session._save()
+        print "save"
+ 
+    def delete_session(self, sid):
+        self.redis.delete(self.prefixed(sid))
+
 
 class RedisSessionStore:
  

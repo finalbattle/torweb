@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import torweb
-from setuptools import setup, find_packages
+from torweb import get_version
+#from setuptools import setup, find_packages
+from distutils.core import setup
 
 with open('README.txt') as file:
     #long_description = file.read()
@@ -14,16 +15,23 @@ print long_description
 ###
 setup(
     name = "torweb",
-    version = torweb.__version__,
-    packages = find_packages(),
-    #packages = ["torweb"],
+    version = get_version(),
+    packages = ["torweb",
+                "torweb.lib",
+                "torweb.lib.soaplib",
+                "torweb.lib.soaplib.ext",
+                "torweb.lib.soaplib.serializers",
+                "torweb.lib.soaplib.util",
+                "torweb.utils"],
+    package_dir = {"torweb":"torweb"},
+    package_data = {"torweb":["../*.txt"]},
     include_package_data = True,
     author = "zhangpeng",
     author_email = "zhangpeng1@infohold.com.cn",
-    url = "",
+    url = "https://github.com/finalbattle/torweb.git",
     description = "torweb",
     long_description=long_description,
-    #install_requires=open('requirements.txt').readlines(),
+    install_requires=open('requirements.txt').readlines(),
     #install_requires=[
     #    "tornado", "PyYAML", "jinja2", "mysql-python", "storm", "sqlalchemy", "pymemcache"
     #],

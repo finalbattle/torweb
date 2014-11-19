@@ -85,6 +85,14 @@ class Yaml_Config(object):
             redis_conn = redis.StrictRedis(host=_redis.get("host", "127.0.0.1"), port=_redis.get("port", "6379"), db="test")
             #return cls(redis.get("host", "127.0.0.1"), redis.get("port", "6379"))
             return cls(redis_conn, key_prefix=_redis.get("prefix", "session"), expire=_redis.get("expire", 3600))
+        if cls.__name__ == 'RedisSessionStoreNew':
+            _redis = self.settings.get("redis", {})
+            import redis
+            from torweb.sessions import RedisPool
+            redis_pool = RedisPool(_redis.get("host", "127.0.0.1"), _redis.get("port", 6379), _redis.get("expire", 3600))
+            #redis_conn = redis.StrictRedis(host=_redis.get("host", "127.0.0.1"), port=_redis.get("port", "6379"), db="test")
+            #return cls(redis.get("host", "127.0.0.1"), redis.get("port", "6379"))
+            return cls(redis_pool.get_redis(), key_prefix=_redis.get("prefix", "session"), expire=_redis.get("expire", 3600))
         if cls.__name__ == 'MemorySessionStore':
             #print 'session store: %s' % cls.__name__
             return cls()

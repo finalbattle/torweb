@@ -58,3 +58,18 @@ class FragmentCacheExtension(Extension):
             self.environment.fragment_cache.add(key, rv, timeout)
         return rv
 
+
+#from torweb.tmpl import FragmentCacheExtension
+#debug = True
+from jinja2 import Environment, PackageLoader, MemcachedBytecodeCache, FileSystemBytecodeCache
+def get_environment(app_name, cache=None):
+    from torweb.cache import SimpleCache
+    _cache = cache or SimpleCache()
+    env = Environment(
+        loader = PackageLoader(app_name, 'templates'),
+        auto_reload = True,
+        extensions = [FragmentCacheExtension],
+        bytecode_cache = MemcachedBytecodeCache(_cache, prefix="%s/jinja2/bytecode/" % app_name, timeout=3600*24*8)
+    )
+    env.fragment_cache = _cache
+    return env

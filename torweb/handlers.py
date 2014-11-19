@@ -86,6 +86,15 @@ class BaseHandler(RequestHandler):
                 #print "cookie sessionsid--%s" % _sessionsid
             from torweb.sessions import RedisSession
             return RedisSession(self.application.session_store, _sessionsid)
+        if session_store.__class__.__name__ == 'RedisSessionStoreNew':
+            if sid is None:
+                _sessionsid = self.application.session_store.generate_sid()
+                #print "cookie generate_sid--%s" % _sessionsid
+            else:
+                _sessionsid = sid.value
+                #print "cookie sessionsid--%s" % _sessionsid
+            from torweb.sessions import RedisSession
+            return RedisSession(self.application.session_store, _sessionsid)
         else:
             #print "session_store -- %s" % session_store
             if sid is None:
