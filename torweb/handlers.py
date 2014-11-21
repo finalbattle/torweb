@@ -37,7 +37,7 @@ class BaseHandler(RequestHandler):
  
     def get_debugger_html(self, status_code, **kwargs):
         if self.debug:
-            from torweb import DebugApplication
+            from torweb.application import DebugApplication
             assert isinstance(self.application, DebugApplication)
             traceback = self.application.get_current_traceback()
             keywords = self.application.get_traceback_renderer_keywords()

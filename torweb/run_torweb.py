@@ -22,10 +22,10 @@ def run(app, host='0.0.0.0', port=8888):
     http.listen(port)
     #http.start()
     instance = IOLoop.instance()
-    logging.info('[%s - %s is running on http://%s:%s]' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), app.__class__.__name__, host, port))
+    logging.info('- [%s is running on http://%s:%s]' % (app.__class__.__name__, host, port))
     if app.settings['debug'] == True and app._wsgi == False:
         tornado.autoreload.start(instance)
-        logging.info('[%s - %s restart with reload]' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), app.__class__.__name__))
+        logging.info('- [%s restart with reload]' % (app.__class__.__name__))
     try:
         instance.start()
     except KeyboardInterrupt:
