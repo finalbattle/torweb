@@ -147,6 +147,8 @@ def make_application(app, debug=False, wsgi=False, settings_path="", url_root="/
     if settings_path != "":
         #conf = app.settings
         conf = Yaml_Config(app_path, settings_path, url_root=url_root)
+        setattr(app, 'yaml_conf', conf)
+        #logging.info(url_root)
     #else:
     #    conf = Yaml_Config(app_path, os.path.join(app_path, 'settings.yaml'), url_root=url_root)
     views_path = os.path.join(app_path, 'views')
@@ -165,20 +167,21 @@ def make_application(app, debug=False, wsgi=False, settings_path="", url_root="/
         #        module = module[0]
         m = __import__(module, {}, {}, name)
         module_list.append(m)
-    from torweb.urls import url, except_url
+    from torweb.urls import url_rules, except_url, url404
     def _set_debug(kw):
         kw["debug"] = debug
         return kw
-    url_handlers = url.handlers
-    url_handlers = [URLSpec(spec.regex.pattern, spec.handler_class, _set_debug(spec.kwargs), spec.name) for spec in url_handlers]
-    if hasattr(app, "url"):
-        app_url_handlers = app.url.handlers
-        app_url_handlers = [URLSpec(spec.regex.pattern, spec.handler_class, _set_debug(spec.kwargs), spec.name) for spec in app_url_handlers]
-        url_handlers.extend(app_url_handlers)
-    _static_urls = [spec.regex.pattern for spec in url.handlers if spec.kwargs.has_key("path") and hasattr(spec.handler_class, 'static_handler') and spec.handler_class.static_handler==True]
-    #url_handlers = [(u, c, _set_debug(kw)) for u, c, kw in url_handlers]
-    #_static_urls = [url for url, cls, kw in url.handlers if kw.has_key("path") and hasattr(cls, 'static_handler') and cls.static_handler==True]
+    url_handlers = []
+    url_rules.extend(url404.handlers)
+    app_url_handlers = url_rules
+    url_handlers.extend(app_url_handlers)
     url_handlers.extend(except_url.handlers)
+    #url_handlers = [URLSpec(spec.regex.pattern, spec.handler_class, _set_debug(spec.kwargs), spec.name) for spec in url_handlers]
+    _static_urls = [spec.regex.pattern for spec in url.handlers if spec.kwargs.has_key("path") and hasattr(spec.handler_class, 'static_handler') and spec.handler_class.static_handler==True]
+
+    #for _uri in url_handlers:
+    #    logging.info("%s <name:%s>" % (_uri.regex.pattern, _uri.name))
+
     keywords.update({"debug":debug})
     if debug:
         application = DebugApplication(url_handlers, **keywords)

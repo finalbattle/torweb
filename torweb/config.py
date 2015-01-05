@@ -4,6 +4,7 @@
 
 import os
 import yaml
+import logging
 from code import interact
 
 class Yaml_Config(object):
@@ -99,8 +100,8 @@ class Yaml_Config(object):
         #print 'session store: default'
         return cls()
     
-    def init_store(self):
-        schemes = self.settings.get('schemes', {})
+    def init_store(self, schemes_list=[]):
+        schemes = self.settings.get('schemes', schemes_list)
         _scheme_dict = {}
         for scheme in schemes:
             #if not hasattr(self.app, scheme.get('storm')):
@@ -271,7 +272,7 @@ class ConfigLoader(object):
             current_config = current_config[subkey]
         return current_config
 
-def get_host_ip():
+def get_host_ip(eth="eth0"):
     ip_addr = None
     import platform
 
@@ -292,9 +293,9 @@ def get_host_ip():
                     struct.pack('256s', ifname[:15])
                 )[20:24])
 
-            ip_addr = get_ip_address('eth0')
-    except:
-        pass
+            ip_addr = get_ip_address(eth)
+    except Exception as e:
+        logging.error(e)
 
     return ip_addr
 

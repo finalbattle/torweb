@@ -11,6 +11,8 @@ import logging
 from code import interact
 from tornado.options import define, options
 
+define("cmd", default="runserver", metavar="runserver|urls")
+
 tornado.options.parse_command_line()
 
 def run(app, host='0.0.0.0', port=8888):
@@ -30,3 +32,10 @@ def run(app, host='0.0.0.0', port=8888):
         instance.start()
     except KeyboardInterrupt:
         instance.stop()
+
+def show_urls(app):
+    from torweb.urls import url_rules
+    for urlspec in url_rules:
+        #logging.info("%s %s %s" % (urlspec.regex.pattern, urlspec.handler_class, urlspec.kwargs))
+        logging.info("%s <name:%s>" % (urlspec.regex.pattern, urlspec.name))
+

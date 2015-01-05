@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # created: zhangpeng <zhangpeng@ivtime.com>
 
-__version__ = "0.0.31"
+__version__ = "0.1"
 
 def get_version():
     return __version__
@@ -15,4 +15,4 @@ import sys
 sys.path.insert(0, abspath(join(base_path, 'utils')))
 sys.path.insert(0, abspath(join(base_path, 'lib')))
 
-from torweb.application import make_application
+#from torweb.application import make_application
