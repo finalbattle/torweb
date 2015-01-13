@@ -12,6 +12,7 @@ from code import interact
 from tornado.options import define, options
 
 define("cmd", default="runserver", metavar="runserver|urls")
+define("port", default=8888)
 
 tornado.options.parse_command_line()
 
@@ -21,6 +22,7 @@ def run(app, host='0.0.0.0', port=8888):
     else:
         http = HTTPServer(app, xheaders=True)
     #http.bind(port, host)
+    port = options.port
     http.listen(port)
     #http.start()
     instance = IOLoop.instance()
