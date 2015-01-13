@@ -1,5 +1,6 @@
 *.pyc
 .hg/
 .hgignore
+*.bak
 dist/
 torweb.egg-info/
