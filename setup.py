@@ -24,14 +24,14 @@ setup(
                 "torweb.lib.soaplib.util",
                 "torweb.utils"],
     package_dir = {"torweb":"torweb"},
-    package_data = {"torweb":["../*.txt"]},
+    package_data = {"torweb":["../*.txt", "../*.md"]},
     include_package_data = True,
     author = "zhangpeng",
     author_email = "zhangpeng1@infohold.com.cn",
     url = "https://github.com/finalbattle/torweb.git",
     description = "torweb",
     long_description=long_description,
-    install_requires=open('requirements.txt').readlines(),
+    #install_requires=open('requirements.txt').readlines(),
     #install_requires=[
     #    "tornado", "PyYAML", "jinja2", "mysql-python", "storm", "sqlalchemy", "pymemcache"
     #],
