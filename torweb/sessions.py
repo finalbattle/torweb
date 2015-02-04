@@ -341,25 +341,26 @@ class RedisSessionStore:
         }
         self.options.update(options)
         self.redis = redis_connection
- 
+
     def prefixed(self, sid):
         return '%s:%s' % (self.options['key_prefix'], sid)
- 
+
     def generate_sid(self, salt=None):
         return generate_key(salt)
 #        return uuid4().get_hex()
- 
+
     def get_session(self, sid, name):
         data = self.redis.hget(self.prefixed(sid), name)
         session = pickle.loads(data) if data else dict()
         return session
- 
+
     def set_session(self, sid, session_data, name):
         expiry = self.options['expire']
         self.redis.hset(self.prefixed(sid), name, pickle.dumps(session_data))
         if expiry:
             self.redis.expire(self.prefixed(sid), expiry)
         #print "save session: set_session--%s-%s-%s" % (sid, session_data, name)
+
     def save(self, session):
         session._save()
  
@@ -438,6 +439,11 @@ class RedisSession(Session):
            modified, not if it is new like it was before.
         """
         return self.dirty
+
+    def get(self, key, default_value=None):
+        return self[key] or default_value
+        # return self._sessiondata[key]
+
 
 #try:
 #    import pymongo
