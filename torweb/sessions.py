@@ -441,7 +441,10 @@ class RedisSession(Session):
         return self.dirty
 
     def get(self, key, default_value=None):
-        return self[key] or default_value
+        try:
+            return self[key]
+        except KeyError:
+            return default_value
         # return self._sessiondata[key]
 
 

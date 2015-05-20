@@ -17,7 +17,7 @@ define("port", default=8888)
 tornado.options.parse_command_line()
 
 def run(app, host='0.0.0.0', port=8888):
-    if app._wsgi == True:
+    if hasattr(app, "_wsgi") and app._wsgi == True:
         container = WSGIContainer(app); http = HTTPServer(container)
     else:
         http = HTTPServer(app, xheaders=True)
@@ -27,7 +27,7 @@ def run(app, host='0.0.0.0', port=8888):
     #http.start()
     instance = IOLoop.instance()
     logging.info('- [%s is running on http://%s:%s]' % (app.__class__.__name__, host, port))
-    if app.settings['debug'] == True and app._wsgi == False:
+    if app.settings['debug'] == True and hasattr(app, "_wsgi") and app._wsgi == False:
         tornado.autoreload.start(instance)
         logging.info('- [%s restart with reload]' % (app.__class__.__name__))
     try:
