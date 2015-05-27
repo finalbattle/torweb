@@ -112,8 +112,8 @@ class iColoredConsoleFormatter(LogFormatter):
         #prefix = '[%(levelname)1.1s %(asctime)s %(module)s:%(lineno)d]' % \
         prefix = self.colored_format % \
             record.__dict__
-        if self._color:
-            prefix = (self._colors.get(record.levelno, self._normal) +
+        #if self._color:
+        prefix = (self._colors.get(record.levelno, self._normal) +
                       prefix + self._normal)
         def safe_unicode(s):
             try:
