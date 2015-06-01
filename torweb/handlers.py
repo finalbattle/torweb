@@ -3,6 +3,7 @@
 # created: zhangpeng <zhangpeng@ivtime.com>
 
 import os
+import traceback
 from tornado.web import (RequestHandler, StaticFileHandler as _StaticFileHandler,
                          ErrorHandler as _ErrorHandler, HTTPError
                         )
