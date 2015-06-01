@@ -363,7 +363,7 @@ class RedisSessionStore:
 
     def save(self, session):
         session._save()
- 
+
     def delete_session(self, sid):
         self.redis.delete(self.prefixed(sid))
 
