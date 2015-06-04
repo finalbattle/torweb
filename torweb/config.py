@@ -11,6 +11,7 @@ class Yaml_Config(object):
     def __init__(self, base_path, yaml_path, url_root="/"):
         self.yaml_path = yaml_path
         f = open(self.yaml_path)
+        self.CONF = CONFIG(self.yaml_path)
         self.settings = yaml.load(f)
         app_name = self.settings.get('app')
         self.app = __import__(app_name)
@@ -61,13 +62,30 @@ class Yaml_Config(object):
     def cache(self):
         if not hasattr(self, '_cache'):
             from torweb.cache import MemcachedCache, NullCache
+            from werkzeug.contrib.cache import RedisCache
+            
+            nullcache = NullCache()
+            setattr(self, '_cache', nullcache)
             cache_servers = self.settings.get('memcached', None)
             if cache_servers:
                 cache = MemcachedCache(cache_servers)
                 setattr(self, '_cache', cache)
-            else:
-                nullcache = NullCache()
-                setattr(self, '_cache', nullcache)
+            try:
+                redis_cache_host = self.CONF("REDIS.HOST")
+                redis_cache_port = self.CONF("REDIS.PORT")
+                if redis_cache_host and redis_cache_port:
+                    cache = RedisCache(redis_cache_host, redis_cache_port)
+                    setattr(self, '_cache', cache)
+                    logging.info("cache: RedisCache")
+            except KeyError:
+                pass
+            #cache_servers = self.settings.get('memcached', None)
+            #if cache_servers:
+            #    cache = MemcachedCache(cache_servers)
+            #    setattr(self, '_cache', cache)
+            #else:
+            #    nullcache = NullCache()
+            #    setattr(self, '_cache', nullcache)
             pass
         return getattr(self, '_cache')
     @property
@@ -84,15 +102,12 @@ class Yaml_Config(object):
             _redis = self.settings.get("redis", {})
             import redis
             redis_conn = redis.StrictRedis(host=_redis.get("host", "127.0.0.1"), port=_redis.get("port", 6379), db="test")
-            #return cls(redis.get("host", "127.0.0.1"), redis.get("port", "6379"))
-            return cls(redis_conn, key_prefix=_redis.get("prefix", "session"), expire=_redis.get("expire", 3600))
+               return cls(redis_conn, key_prefix=_redis.get("prefix", "session"), expire=_redis.get("expire", 3600))
         if cls.__name__ == 'RedisSessionStoreNew':
             _redis = self.settings.get("redis", {})
             import redis
             from torweb.sessions import RedisPool
             redis_pool = RedisPool(_redis.get("host", "127.0.0.1"), _redis.get("port", 6379), _redis.get("expire", 3600))
-            #redis_conn = redis.StrictRedis(host=_redis.get("host", "127.0.0.1"), port=_redis.get("port", "6379"), db="test")
-            #return cls(redis.get("host", "127.0.0.1"), redis.get("port", "6379"))
             return cls(redis_pool.get_redis(), key_prefix=_redis.get("prefix", "session"), expire=_redis.get("expire", 3600))
         if cls.__name__ == 'MemorySessionStore':
             #print 'session store: %s' % cls.__name__
