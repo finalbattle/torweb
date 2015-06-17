@@ -17,9 +17,11 @@ __all__ = ['BaseHandler', 'StaticFileHandler', 'ErrorHandler', 'XMLRPCHandler', 
 
 
 class BaseHandler(RequestHandler):
+
     def initialize(self, debug=False, **kwargs):
         self.debug = debug
         self.kwargs = kwargs
+
     def prepare(self):
         '''
         before request
@@ -67,6 +69,7 @@ class BaseHandler(RequestHandler):
             else:
                 self.finish(self.get_error_html(status_code, **kwargs))
             return
+
         if self.settings.get("debug") and "exc_info" in kwargs:
             # in debug mode, try to send a traceback
             self.set_header('Content-Type', 'text/plain')
@@ -79,7 +82,6 @@ class BaseHandler(RequestHandler):
                             "code": status_code,
                             "message": self._reason,
                         })
-
  
     def get_debugger_html(self, status_code, **kwargs):
         if self.debug:
@@ -97,6 +99,7 @@ class BaseHandler(RequestHandler):
         for name in names:
             arguments[name] = self.get_argument(name)
         return arguments
+
     @property
     def query_args(self):
         cls = ImmutableMultiDict
@@ -112,11 +115,13 @@ class BaseHandler(RequestHandler):
                 key = query_str; value = u''
             result.append((key, value.decode('utf-8', 'ignore')))
         return cls(result)
+
     def on_finish(self):
         '''
         after request
         '''
         pass
+
     @cached_property
     def session(self):
         '''根据session_sid值来获取session对象，或者初始化一个session对象'''
@@ -159,6 +164,7 @@ class BaseHandler(RequestHandler):
             pass
         if self.session.should_save:
             self.application.session_store.save(self.session)
+
     def write_jsonp(self, obj):
         key = self.get_argument("callback", u"jsonpcallback")
         try:
@@ -170,6 +176,7 @@ class BaseHandler(RequestHandler):
         self.write(key+u'(' + s + u')')
 
 class StaticFileHandler(_StaticFileHandler):
+
     def initialize(self, path, default_filename=None, debug=False, **kwargs):
         super(StaticFileHandler, self).initialize(path, default_filename)
         self.debug = debug
@@ -178,13 +185,17 @@ class StaticFileHandler(_StaticFileHandler):
 
 class ErrorHandler(_ErrorHandler): 
     """Generates an error response with status_code for all requests.""" 
+
     def __init__(self, application, request, status_code): 
         RequestHandler.__init__(self, application, request)
         self.set_status(status_code) 
+
     def initialize(self, app=None, request=None, status_code=404):
         self.app = app; self.status_code = status_code
+
     def prepare(self): 
         raise HTTPError(self._status_code)
+
 #    def get_error_html(self, status_code, **kwargs): 
 #        from ivtime import base_path
 #        return open(os.path.join(base_path,'static', 'error','404.html')).read() 
@@ -198,8 +209,10 @@ def private(func):
     return PrivateMethod()
 
 class XMLRPCHandler(BaseHandler):
+
     def get(self):
         pass
+
     def post(self):
         import xmlrpclib
         try:
@@ -229,8 +242,10 @@ class XMLRPCHandler(BaseHandler):
 
 
 class JSONRPCHandler(BaseHandler):
+
     def get(self, *args, **kwargs):
         return self.post()
+
     def post(self, *args, **kwargs):
         """
             JSON-RPC 2.0

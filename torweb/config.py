@@ -108,7 +108,7 @@ class Yaml_Config(object):
             import redis
             from torweb.sessions import RedisPool
             redis_pool = RedisPool(_redis.get("host", "127.0.0.1"), _redis.get("port", 6379), _redis.get("expire", 3600))
-            return cls(redis_pool.get_redis(), key_prefix=_redis.get("prefix", "session"), expire=_redis.get("expire", 3600))
+            return cls(redis_pool.get_redis(), key_prefix=_redis.get("prefix", cls.__name__), expire=_redis.get("expire", 3600))
         if cls.__name__ == 'MemorySessionStore':
             #print 'session store: %s' % cls.__name__
             return cls()
@@ -177,7 +177,7 @@ class Yaml_Config(object):
             )
             event.listen(engine, 'checkout', my_on_checkout)
             metadata = MetaData(bind=engine)
-            session = scoped_session(sessionmaker(bind=engine, query_cls=CacheQuery))
+            session = scoped_session(sessionmaker(bind=engine, query_cls=CacheQuery,expire_on_commit=False))
             sqlalchemy_sessions = [session]
             DB_Session = sessionmaker(bind=engine)
             return {"metadata":metadata, "session":session, "sqlalchemy_sessions":sqlalchemy_sessions}
