@@ -9,7 +9,7 @@ with open('README.md') as file:
     readlines = file.readlines()
     long_description = "".join(readlines)
 
-print long_description
+print(long_description)
 ###
 #install_requires=open('requirements.txt').readlines(),
 ###
