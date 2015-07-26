@@ -176,7 +176,7 @@ def make_application(app, debug=False, wsgi=False, settings_path="", url_root="/
     app_url_handlers = url_rules
     url_handlers.extend(app_url_handlers)
     url_handlers.extend(except_url.handlers)
-    #url_handlers = [URLSpec(spec.regex.pattern, spec.handler_class, _set_debug(spec.kwargs), spec.name) for spec in url_handlers]
+    url_handlers = [URLSpec(spec.regex.pattern, spec.handler_class, _set_debug(spec.kwargs), spec.name) for spec in url_handlers]
     _static_urls = [spec.regex.pattern for spec in url.handlers if spec.kwargs.has_key("path") and hasattr(spec.handler_class, 'static_handler') and spec.handler_class.static_handler==True]
 
     #for _uri in url_handlers:

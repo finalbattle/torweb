@@ -3,15 +3,20 @@
 # created: zhangpeng <zhangpeng@ivtime.com>
 
 import os
+import sys
 import traceback
 from tornado.web import (RequestHandler, StaticFileHandler as _StaticFileHandler,
                          ErrorHandler as _ErrorHandler, HTTPError
                         )
+from tornado.util import raise_exc_info
 from tornado.wsgi import HTTPRequest
 from torweb.wrappers import cached_property
 from torweb.sessions import SessionStore
 from torweb.datastructure import MultiDict, ImmutableMultiDict
 from code import interact
+import logging
+
+logger = logging.getLogger(__name__)
 
 __all__ = ['BaseHandler', 'StaticFileHandler', 'ErrorHandler', 'XMLRPCHandler', 'JSONRPCHandler', 'WSGIRequest']
 
@@ -20,6 +25,7 @@ class BaseHandler(RequestHandler):
 
     def initialize(self, debug=False, **kwargs):
         self.debug = debug
+        logger.info("self.debug:%s" % self.debug)
         self.kwargs = kwargs
 
     def prepare(self):
@@ -57,6 +63,9 @@ class BaseHandler(RequestHandler):
         Users of ``get_error_html`` are encouraged to convert their code
         to override ``write_error`` instead.
         """
+        logger.info("write_error")
+        #if hasattr(self, 'get_error_html'):
+        #    self.finish(self.get_debugger_html(status_code, **kwargs))
         if hasattr(self, 'get_error_html'):
             if 'exc_info' in kwargs:
                 exc_info = kwargs.pop('exc_info')
@@ -82,6 +91,15 @@ class BaseHandler(RequestHandler):
                             "code": status_code,
                             "message": self._reason,
                         })
+
+    def get_error_html(self, status_code, **kwargs):
+        return self.write("%s %s"  % (status_code, kwargs))
+
+    def _handle_request_exception(self, e):
+        # super(BaseHandler, self)._handle_request_exception(e)
+        logger.info('-'*20+"[_handle_request_exception]"+"-"*20)
+        logger.info(traceback.format_exc())
+        self.write_error(500, exc_info=sys.exc_info(), traceback=traceback.format_exc())
  
     def get_debugger_html(self, status_code, **kwargs):
         if self.debug:
