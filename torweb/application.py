@@ -7,6 +7,7 @@ __all__ = ["get_modules", "WebApplication", "WSGIApplication", "DebugApplication
 import os
 import re
 import logging
+import tornado
 import tornado.options
 from tornado.web import (Application, RequestHandler, StaticFileHandler as _StaticFileHandler,
                          RedirectHandler, HTTPError, URLSpec)
@@ -90,32 +91,12 @@ class WSGIApplication(_WSGIApplication):
         return handler._write_buffer
 
 
-class DebugApplication(WebApplication):
+class DebugApplication(Application):
     "Tornado Application supporting werkzeug interactive debugger."
- 
+
     # This supports get_error_html in Handler above.
- 
-    def __init__(self, *args, **kwargs):
-        from werkzeug.debug import DebuggedApplication
-        self.debug_app = DebuggedApplication(self.debug_wsgi_app, evalex=True)
-        self.debug_container = tornado.wsgi.WSGIContainer(self.debug_app)
-        super(DebugApplication, self).__init__(*args, **kwargs)
- 
-    def __call__(self, request):
-        if '__debugger__' in request.uri:
-            # Do not call get_current_traceback here, as this is a follow-up
-            # request from the debugger. DebugHandler loads the traceback.
-            return self.debug_container(request)
-        return super(DebugApplication, self).__call__(request)
- 
-    @classmethod
-    def debug_wsgi_app(cls, environ, start_response):
-        print "Fallback WSGI application, wrapped by werkzeug's debug middleware."
-        status = '500 Internal Server Error'
-        response_headers = [('Content-type', 'text/plain')]
-        start_response(status, response_headers)
-        return ['Failed to load debugger.\n']
- 
+
+
     def get_current_traceback(self):
         "Get the current Python traceback, keeping stack frames in debug app."
         traceback = get_current_traceback()
@@ -123,13 +104,36 @@ class DebugApplication(WebApplication):
             self.debug_app.frames[frame.id] = frame
         self.debug_app.tracebacks[traceback.id] = traceback
         return traceback
- 
+
     def get_traceback_renderer_keywords(self):
         "Keep consistent debug app configuration."
         # DebuggedApplication generates a secret for use in interactions.
         # Otherwise, an attacker could inject code into our application.
         # Debugger gives an empty response when secret is not provided.
         return dict(evalex=self.debug_app.evalex, secret=self.debug_app.secret)
+
+    # these are needed for tornado < 4
+    if tornado.version_info[0] < 4:
+        def __init__(self, *args, **kwargs):
+            from werkzeug.debug import DebuggedApplication
+            self.debug_app = DebuggedApplication(self.debug_wsgi_app, evalex=True)
+            self.debug_container = tornado.wsgi.WSGIContainer(self.debug_app)
+            super(DebugApplication, self).__init__(*args, **kwargs)
+
+        def __call__(self, request):
+            if '__debugger__' in request.uri:
+                # Do not call get_current_traceback here, as this is a follow-up
+                # request from the debugger. DebugHandler loads the traceback.
+                return self.debug_container(request)
+            return super(DebugApplication, self).__call__(request)
+
+        @classmethod
+        def debug_wsgi_app(cls, environ, start_response):
+            print "Fallback WSGI application, wrapped by werkzeug's debug middleware."
+            status = '500 Internal Server Error'
+            response_headers = [('Content-type', 'text/plain')]
+            start_response(status, response_headers)
+            return ['Failed to load debugger.\n']
 
 def get_current_traceback():
     "Get the current traceback in debug mode, using werkzeug debug tools."
@@ -190,6 +194,7 @@ def make_application(app, debug=False, wsgi=False, settings_path="", url_root="/
             application = _WSGIApplication(url_handlers, **keywords)
         else:
             application = WebApplication(url_handlers, **keywords)
+    setattr(app, '_wsgi', debug)
     application.url_handlers = url_handlers
     application._static_urls = _static_urls
     # 初始化session store

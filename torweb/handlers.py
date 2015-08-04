@@ -8,6 +8,7 @@ import traceback
 from tornado.web import (RequestHandler, StaticFileHandler as _StaticFileHandler,
                          ErrorHandler as _ErrorHandler, HTTPError
                         )
+from tornado.log import access_log, app_log, gen_log
 from tornado.util import raise_exc_info
 from tornado.wsgi import HTTPRequest
 from torweb.wrappers import cached_property
@@ -63,9 +64,22 @@ class BaseHandler(RequestHandler):
         Users of ``get_error_html`` are encouraged to convert their code
         to override ``write_error`` instead.
         """
-        logger.info("write_error")
+        app_log.error('-'*20+"[write_error]"+"-"*20)
+        app_log.error(traceback.format_exc())
         #if hasattr(self, 'get_error_html'):
         #    self.finish(self.get_debugger_html(status_code, **kwargs))
+        if self.debug and hasattr(self, 'get_debugger_html'):
+            if 'exc_info' in kwargs:
+                exc_info = kwargs.pop('exc_info')
+                kwargs['exception'] = exc_info[1]
+                try:
+                    # Put the traceback into sys.exc_info()
+                    raise_exc_info(exc_info)
+                except Exception:
+                    self.finish(self.get_debugger_html(status_code, **kwargs))
+            else:
+                self.finish(self.get_debugger_html(status_code, **kwargs))
+            return
         if hasattr(self, 'get_error_html'):
             if 'exc_info' in kwargs:
                 exc_info = kwargs.pop('exc_info')
@@ -93,15 +107,23 @@ class BaseHandler(RequestHandler):
                         })
 
     def get_error_html(self, status_code, **kwargs):
-        return self.write("%s %s"  % (status_code, kwargs))
+        if self.debug:
+            return self.get_debugger_html(status_code, **kwargs)
+        else:
+            self.set_header('Content-Type', 'text/plain')
+            content = ''
+            for k, v in kwargs.items():
+                content += '%s: %s\n'% (k, v)
+            return self.write("%s Server Error \n%s" % (status_code, content))
 
     def _handle_request_exception(self, e):
         # super(BaseHandler, self)._handle_request_exception(e)
-        logger.info('-'*20+"[_handle_request_exception]"+"-"*20)
-        logger.info(traceback.format_exc())
+        # logger.info('-'*20+"[_handle_request_exception]"+"-"*20)
+        # logger.info(traceback.format_exc())
         self.write_error(500, exc_info=sys.exc_info(), traceback=traceback.format_exc())
  
     def get_debugger_html(self, status_code, **kwargs):
+        logger.info("-------------[get_debugger_html]--------------")
         if self.debug:
             from torweb.application import DebugApplication
             assert isinstance(self.application, DebugApplication)

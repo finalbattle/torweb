@@ -4,6 +4,7 @@
 import os
 import re
 import sys
+import logging
 import tempfile
 from os import path
 from time import time
@@ -19,6 +20,14 @@ except ImportError:
     from pickle import dumps, loads, HIGHEST_PROTOCOL
 
 _sha1_re = re.compile(r'^[a-f0-9]{40}$')
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(threadName)s %(levelname)s %(name)s %(message)s",
+    disable_existing_loggers=False,
+)
+
+logger = logging.getLogger("session")
 
 def _urandom():
     if hasattr(os, 'urandom'):
@@ -315,7 +324,7 @@ class RedisSessionStoreNew:
     def get_session(self, sid, name):
         data = self.redis.hget(self.prefixed(sid), name)
         session = pickle.loads(data) if data else dict()
-        print "RedisSessionStore--get_session--session", session
+        logger.info("RedisSessionStore--get_session--session", session)
         return session
  
     def set_session(self, sid, session_data, name):
@@ -323,10 +332,10 @@ class RedisSessionStoreNew:
         self.redis.hset(self.prefixed(sid), name, pickle.dumps(session_data))
         if expiry:
             self.redis.expire(self.prefixed(sid), expiry)
-        print "save session: set_session--%s-%s-%s" % (sid, session_data, name)
+        logger.info("save session: set_session--%s-%s-%s" % (sid, session_data, name))
     def save(self, session):
         session._save()
-        print "save"
+        logger.info("save")
  
     def delete_session(self, sid):
         self.redis.delete(self.prefixed(sid))
@@ -425,7 +434,7 @@ class RedisSession(Session):
  
     def _dirty(self):
         self.dirty = True
-        print "dirty:", self.dirty
+        #print "dirty:", self.dirty
  
     def _save(self):
         self._store.set_session(self._sessionid, self._sessiondata, 'data')
