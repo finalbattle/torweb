@@ -314,6 +314,11 @@ def get_host_ip(eth="eth0"):
 
     return ip_addr
 
+import uuid
+def get_host_mac(): 
+    mac=uuid.UUID(int = uuid.getnode()).hex[-12:] 
+    return ":".join([mac[e:e+2] for e in range(0,11,2)])
+
 
 class Configuration(object):
     config_context = None
