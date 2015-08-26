@@ -18,9 +18,9 @@ define("port", default=8888)
 tornado.options.parse_command_line()
 
 def run(app, host='0.0.0.0', port=''):
+    import tornado
     instance = IOLoop.instance()
     if app.settings['debug'] == True:
-        import tornado
         if tornado.version_info[0] < 4:
             http = HTTPServer(app, xheaders=True)
         else:

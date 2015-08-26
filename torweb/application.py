@@ -91,7 +91,7 @@ class WSGIApplication(_WSGIApplication):
         return handler._write_buffer
 
 
-class DebugApplication(Application):
+class DebugApplication(WebApplication):
     "Tornado Application supporting werkzeug interactive debugger."
 
     # This supports get_error_html in Handler above.
