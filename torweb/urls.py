@@ -14,6 +14,7 @@ class Url(object):
     def __init__(self, prefix="/", except_url=False, status_code=200):
         self.prefix = prefix
         self.handlers = []
+        self.handlers_dict = {}
         self.status_code = status_code
 
     def __call__(self, url, **kwds):
@@ -31,6 +32,7 @@ class Url(object):
                     prefix = prefix + "/"
                 _url = urlparse.urljoin(prefix, re.sub("/{0,1}", "", url, 1))
             self.handlers.append(URLSpec(_url, cls, kwds, name=name))
+            self.handlers_dict[name] = URLSpec(_url, cls, kwds, name=name)
             #logging.info("[status_code-->%s][url:%s]" % (status_code, _url))
             if status_code == 200:
                 url_rules.append(URLSpec(_url, cls, kwds, name=name))

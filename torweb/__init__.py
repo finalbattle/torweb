@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # created: zhangpeng <zhangpeng@ivtime.com>
 
-__version__ = "0.1.16"
+__version__ = "0.1.17"
 
 def get_version():
     return __version__
