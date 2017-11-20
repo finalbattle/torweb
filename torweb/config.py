@@ -104,7 +104,8 @@ class Yaml_Config(object):
             redis_conn = redis.StrictRedis(
                 host=_redis.get("host", "127.0.0.1"),
                 port=_redis.get("port", 6379),
-                db=_redis.get("db", "test")
+                db=_redis.get("db", "test"),
+                password=_redis.get("password", None)
             )
             return cls(redis_conn, key_prefix=_redis.get("prefix", "session"), expire=_redis.get("expire", 3600))
         if cls.__name__ == 'RedisSessionStoreNew':
