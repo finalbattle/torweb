@@ -113,5 +113,13 @@ try:
                 cache.set(key, value, timeout)
                 return value
             return value
+        def fetchCountByLimit(self, cache, key, timeout=0, limit=0):
+            value = cache.get(key)
+            if value is None:
+                value = self.one()
+                if len(value) == 1 and value[0] > limit:
+                    cache.set(key, value, timeout)
+                return value
+            return value
 except ImportError:
     pass
